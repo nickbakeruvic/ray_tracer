@@ -40,8 +40,9 @@ int main() {
 	cam.aspect_ratio = 16.0 / 9.0;
 	cam.image_width = 400;
 	cam.samples_per_pixel = 100;
+	cam.max_depth = 50;
 
-	std::ofstream out_file("image.ppm", std::ios::binary);
+	std::ofstream out_file("image.ppm", std::ios::out | std::ios::binary | std::ios::trunc);
 	if (!out_file) {
 		std::cerr << "Could not open image.ppm for writing\n";
 		return 1;
