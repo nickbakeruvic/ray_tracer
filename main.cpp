@@ -18,14 +18,6 @@ color ray_color(const ray& r, const hittable& world) {
 }
 
 int main() {
-	
-	/**************
-	 * Image
-	 **************/
-	auto aspect_ratio = 16.0 / 9.0;
-	int image_width = 400;
-	int image_height = int(image_width / aspect_ratio);
-
 	/**************
 	 * World
 	 **************/
