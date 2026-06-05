@@ -9,7 +9,8 @@ using color = vec3;
 inline double linear_to_gamma(double linear_component) {
     return (linear_component > 0) ? std::sqrt(linear_component) : 0;
 }
-void write_color(std::ostream& out, const color& pixel_color) {
+
+color write_color(const color& pixel_color) {
     auto r = pixel_color.x();
     auto g = pixel_color.y();
     auto b = pixel_color.z();
@@ -23,7 +24,7 @@ void write_color(std::ostream& out, const color& pixel_color) {
     int gbyte = int(255.999 * intensity.clamp(g));
     int bbyte = int(255.999 * intensity.clamp(b));
 
-    out << rbyte << ' ' << gbyte << ' ' << bbyte << '\n';
+    return color(rbyte, gbyte, bbyte);
 }
 
 #endif

@@ -26,6 +26,7 @@ int main() {
 	auto material_ground = make_shared<lambertian>(color(0.5, 0.5, 0.5));
 	world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, material_ground));
 
+	/*
 	for (int i = -11; i < 11; i ++) {
 		for (int j = -11; j < 11; j ++) {
 			auto choose_mat = random_double();
@@ -53,6 +54,7 @@ int main() {
 			}
 		}
 	}
+	*/
 
 	auto material_dielectric = make_shared<dielectric>(1.5);
 	auto material_lambertian = make_shared<lambertian>(color(0.4, 0.2, 0.1));
@@ -68,9 +70,9 @@ int main() {
 	camera cam;
 	
 	cam.aspect_ratio = 16.0 / 9.0;
-	cam.image_width = 1200;
-	cam.samples_per_pixel = 500;
-	cam.max_depth = 50;
+	cam.image_width = 400;
+	cam.samples_per_pixel = 5;
+	cam.max_depth = 10;
 
 	cam.vfov = 20;
 	cam.lookfrom = point3(13, 2, 3);

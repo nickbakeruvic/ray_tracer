@@ -22,6 +22,12 @@ class camera {
     void render(const hittable& world, std::ostream& out = std::cout) {
         initialize();
 
+        vec3 **image = (vec3 **)std::malloc(image_height * sizeof(vec3 *));
+
+        for (int j = 0; j < image_height; j ++) {
+            image[j] = (vec3 *)std::malloc(image_width * sizeof(vec3));
+        }
+
         out << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
         for (int j = 0; j < image_height; j++) {
@@ -32,7 +38,13 @@ class camera {
                     ray r = get_ray(i, j);
                     pixel_color += ray_color(r, max_depth, world);
                 }
-                write_color(out, pixel_samples_scale * pixel_color);
+                image[j][i] = write_color(pixel_samples_scale * pixel_color);
+            }
+        }
+
+        for (int j = 0; j < image_height; j++) {
+            for (int i = 0; i < image_width; i++) {
+                out << image[j][i].x() << ' ' << image[j][i].y() << ' ' << image[j][i].z() << '\n';
             }
         }
 
