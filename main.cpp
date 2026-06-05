@@ -45,10 +45,13 @@ int main() {
 	cam.samples_per_pixel = 10;
 	cam.max_depth = 10;
 
-	cam.vfov = 90;
+	cam.vfov = 20;
 	cam.lookfrom = point3(-2, 2, 1);
 	cam.lookat = point3(0, 0, -1);
 	cam.vup = vec3(0, 1, 0);
+
+	cam.defocus_angle = 10.0;
+	cam.focus_dist = 3.4;
 
 	std::ofstream out_file("image.ppm", std::ios::out | std::ios::binary | std::ios::trunc);
 	if (!out_file) {
