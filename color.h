@@ -6,11 +6,11 @@
 
 using color = vec3;
 
-inline double linear_to_gamma(double linear_component) {
+RAY_HOST_DEVICE inline double linear_to_gamma(double linear_component) {
     return (linear_component > 0) ? std::sqrt(linear_component) : 0;
 }
 
-color write_color(const color& pixel_color) {
+RAY_HOST_DEVICE color write_color(const color& pixel_color) {
     auto r = pixel_color.x();
     auto g = pixel_color.y();
     auto b = pixel_color.z();
@@ -19,7 +19,7 @@ color write_color(const color& pixel_color) {
     g = linear_to_gamma(g);
     b = linear_to_gamma(b);
 
-    static const interval intensity(0.000, 0.999);
+    const interval intensity(0.000, 0.999);
     int rbyte = int(255.999 * intensity.clamp(r));
     int gbyte = int(255.999 * intensity.clamp(g));
     int bbyte = int(255.999 * intensity.clamp(b));

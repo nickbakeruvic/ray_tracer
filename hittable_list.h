@@ -20,7 +20,7 @@ class hittable_list : public hittable {
     }
 
     // store only the closest object ray hits
-    bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
+    RAY_HOST_DEVICE bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
         hit_record temp_rec;
         bool hit_anything = false;
         auto closest_so_far = ray_t.max;

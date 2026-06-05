@@ -3,15 +3,30 @@
 
 #include <cuda_runtime.h>
 
+#include "hittable_list.h"
 #include "hittable.h"
 #include "material.h"
 
-__global__ void render_gpu(vec3 *image, size_t num_pixels) {
+__global__ void render_gpu(vec3 *image, size_t num_pixels, int image_height, int image_width, int samples_per_pixel, int max_depth, hittable_list world) {
     auto tid = blockIdx.x * blockDim.x + threadIdx.x;
+    double row = tid % image_width;
+    double col = tid / image_width;
+
     if (tid >= num_pixels)
         return;
 
-    image[tid] = vec3(100, 100, 100);
+    double a = row / double(image_height);
+    double b = col / double(image_height);
+
+    //printf("\nrow %d col %d tid %d, %f, %f", (int)row, (int)col, (int)tid, 255 * a, 255 * b);
+    /*color pixel_color(0,0,0);
+    for (int sample = 0; sample < samples_per_pixel; sample++) {
+        ray r = get_ray(i, j);
+        pixel_color += ray_color(r, max_depth, world);
+    }
+    image[j][i] = write_color(pixel_samples_scale * pixel_color);*/
+
+    image[tid] = vec3(255 * a, 255 * b, 100);
 }
 
 class camera {
@@ -37,11 +52,15 @@ class camera {
 
         size_t blocks = int(num_pixels / 1024) + 1;
         vec3 *device_image = nullptr;
+        hittable_list device_world;
         vec3 *host_image = (vec3 *)std::malloc(image_buf_size);
 
         cudaMalloc((void **)&device_image, num_pixels * sizeof(vec3));
+        cudaMalloc((void **) &device_world, sizeof(world));
+        cudaMemcpy((void *)device_world, (void *)world, sizeof(world), cudaMemcpyHostToDevice);
 
-        render_gpu<<<blocks, 1024>>>(device_image, num_pixels);
+
+        render_gpu<<<blocks, 1024>>>(device_image, num_pixels, image_height, image_width, samples_per_pixel, max_depth, device_world);
 
         cudaDeviceSynchronize();
         cudaMemcpy(host_image, device_image, image_buf_size, cudaMemcpyDeviceToHost);
@@ -116,7 +135,7 @@ class camera {
     }
 
     // project camera ray towards randomly sampled point on pixel i,j
-    ray get_ray(int i, int j) const {
+    RAY_HOST_DEVICE ray get_ray(int i, int j) const {
         auto offset = sample_square();
         auto pixel_sample = pixel00_loc
                           + ((i + offset.x()) * pixel_delta_u)
@@ -128,17 +147,17 @@ class camera {
         return ray(ray_origin, ray_direction);
     }
 
-    vec3 sample_square() const {
+    RAY_HOST_DEVICE vec3 sample_square() const {
         // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
         return vec3(random_double() - 0.5, random_double() - 0.5, 0);
     }
 
-    point3 defocus_disk_sample() const {
+    RAY_HOST_DEVICE point3 defocus_disk_sample() const {
         auto p = random_in_unit_disk();
         return center + (p[0] * defocus_disk_u) + (p[1] * defocus_disk_v);
     }
 
-    color ray_color(const ray& r, int depth, const hittable& world) const {
+    RAY_HOST_DEVICE color ray_color(const ray& r, int depth, const hittable& world) const {
         hit_record rec;
 
         if (depth <= 0)
