@@ -42,8 +42,13 @@ int main() {
 	
 	cam.aspect_ratio = 16.0 / 9.0;
 	cam.image_width = 400;
-	cam.samples_per_pixel = 100;
-	cam.max_depth = 50;
+	cam.samples_per_pixel = 10;
+	cam.max_depth = 10;
+
+	cam.vfov = 90;
+	cam.lookfrom = point3(-2, 2, 1);
+	cam.lookat = point3(0, 0, -1);
+	cam.vup = vec3(0, 1, 0);
 
 	std::ofstream out_file("image.ppm", std::ios::out | std::ios::binary | std::ios::trunc);
 	if (!out_file) {
