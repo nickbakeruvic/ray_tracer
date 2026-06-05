@@ -7,6 +7,10 @@
 #include <memory>
 #include <cstdlib>
 
+#include <cuda_runtime.h>
+
+#define RAY_HOST_DEVICE __host__ __device__
+
 using std::make_shared;
 using std::shared_ptr;
 

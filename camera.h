@@ -1,8 +1,18 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include <cuda_runtime.h>
+
 #include "hittable.h"
 #include "material.h"
+
+__global__ void render_gpu(vec3 *image, size_t num_pixels) {
+    auto tid = blockIdx.x * blockDim.x + threadIdx.x;
+    if (tid >= num_pixels)
+        return;
+
+    image[tid] = vec3(100, 100, 100);
+}
 
 class camera {
   public:
@@ -22,14 +32,23 @@ class camera {
     void render(const hittable& world, std::ostream& out = std::cout) {
         initialize();
 
-        vec3 **image = (vec3 **)std::malloc(image_height * sizeof(vec3 *));
+        size_t num_pixels = image_height * image_width;
+        size_t image_buf_size = num_pixels * sizeof(vec3);
 
-        for (int j = 0; j < image_height; j ++) {
-            image[j] = (vec3 *)std::malloc(image_width * sizeof(vec3));
-        }
+        size_t blocks = int(num_pixels / 1024) + 1;
+        vec3 *device_image = nullptr;
+        vec3 *host_image = (vec3 *)std::malloc(image_buf_size);
+
+        cudaMalloc((void **)&device_image, num_pixels * sizeof(vec3));
+
+        render_gpu<<<blocks, 1024>>>(device_image, num_pixels);
+
+        cudaDeviceSynchronize();
+        cudaMemcpy(host_image, device_image, image_buf_size, cudaMemcpyDeviceToHost);
 
         out << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
+        /*
         for (int j = 0; j < image_height; j++) {
             std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
             for (int i = 0; i < image_width; i++) {
@@ -41,11 +60,10 @@ class camera {
                 image[j][i] = write_color(pixel_samples_scale * pixel_color);
             }
         }
+        */
 
-        for (int j = 0; j < image_height; j++) {
-            for (int i = 0; i < image_width; i++) {
-                out << image[j][i].x() << ' ' << image[j][i].y() << ' ' << image[j][i].z() << '\n';
-            }
+        for (int j = 0; j < image_height * image_width; j++) {
+            out << host_image[j].x() << ' ' << host_image[j].y() << ' ' << host_image[j].z() << '\n';
         }
 
         std::clog << "\rDone.                   \n";
